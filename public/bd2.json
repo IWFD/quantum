@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "description": "Banco de dados 2 - Probabilidades pós-flop, outs e ajustes por número de jogadores",
+  "outs_to_probability": {
+    "description": "Regra dos Outs: probabilidade de completar a mão no próximo street",
+    "flop_to_turn": {
+      "1": 0.0222, "2": 0.0444, "3": 0.0667, "4": 0.0889,
+      "5": 0.1111, "6": 0.1333, "7": 0.1556, "8": 0.1778,
+      "9": 0.2000, "10": 0.2222, "11": 0.2444, "12": 0.2667,
+      "13": 0.2889, "14": 0.3111, "15": 0.3333, "16": 0.3556,
+      "17": 0.3778, "18": 0.4000, "19": 0.4222, "20": 0.4444
+    },
+    "flop_to_river": {
+      "1": 0.0426, "2": 0.0851, "3": 0.1277, "4": 0.1702,
+      "5": 0.2128, "6": 0.2553, "7": 0.2979, "8": 0.3404,
+      "9": 0.3830, "10": 0.4255, "11": 0.4681, "12": 0.5106,
+      "13": 0.5532, "14": 0.5957, "15": 0.6383, "16": 0.6809,
+      "17": 0.7234, "18": 0.7660, "19": 0.8085, "20": 0.8511
+    },
+    "turn_to_river": {
+      "1": 0.0222, "2": 0.0444, "3": 0.0667, "4": 0.0889,
+      "5": 0.1111, "6": 0.1333, "7": 0.1556, "8": 0.1778,
+      "9": 0.2000, "10": 0.2222, "11": 0.2444, "12": 0.2667,
+      "13": 0.2889, "14": 0.3111, "15": 0.3333, "16": 0.3556,
+      "17": 0.3778, "18": 0.4000
+    }
+  },
+  "draw_outs": {
+    "flush_draw": { "outs": 9, "name": "Projeto de Flush (4 cartas do mesmo naipe)" },
+    "open_ended_straight": { "outs": 8, "name": "Sequência Aberta (4 em sequência)" },
+    "gutshot_straight": { "outs": 4, "name": "Sequência Fechada (Gutshot)" },
+    "overcards": { "outs": 6, "name": "Overcards (duas cartas acima da mesa)" },
+    "pair_to_two_pair": { "outs": 5, "name": "Par para Dois Pares" },
+    "pair_to_set": { "outs": 2, "name": "Par na mão para Trinca" },
+    "flush_draw_plus_straight": { "outs": 15, "name": "Flush Draw + Sequência Aberta" },
+    "flush_draw_plus_gutshot": { "outs": 12, "name": "Flush Draw + Gutshot" }
+  },
+  "player_count_adjustment": {
+    "description": "Fator de ajuste de probabilidade baseado no número de oponentes ativos",
+    "2": 1.00,
+    "3": 0.87,
+    "4": 0.76,
+    "5": 0.68,
+    "6": 0.61,
+    "7": 0.55,
+    "8": 0.50,
+    "9": 0.46,
+    "10": 0.43
+  },
+  "position_bonus": {
+    "description": "Bônus de equidade baseado na posição na mesa",
+    "BTN": 0.08,
+    "CO": 0.05,
+    "HJ": 0.03,
+    "UTG+2": 0.01,
+    "UTG+1": 0.00,
+    "UTG": -0.02,
+    "BB": -0.01,
+    "SB": -0.03
+  },
+  "pot_odds_thresholds": {
+    "description": "Thresholds para decisão baseada em pot odds",
+    "fold": { "max_equity": 0.20, "advice": "FOLD - Probabilidade muito baixa" },
+    "check_call": { "min_equity": 0.20, "max_equity": 0.45, "advice": "CHECK/CALL - Aguarde desenvolvimento" },
+    "call": { "min_equity": 0.45, "max_equity": 0.65, "advice": "CALL - Boa probabilidade de vencer" },
+    "raise": { "min_equity": 0.65, "max_equity": 0.80, "advice": "RAISE - Posição favorável, pressione" },
+    "all_in": { "min_equity": 0.80, "advice": "ALL-IN - Mão dominante, maximize o pote" }
+  }
+}

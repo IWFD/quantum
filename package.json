@@ -1,0 +1,12 @@
+{
+  "name": "quantum-poker-ai",
+  "version": "1.0.0",
+  "description": "Texas Hold'em Poker AI com simulação Monte Carlo",
+  "engines": {
+    "node": "18.x"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "vercel dev"
+  }
+}

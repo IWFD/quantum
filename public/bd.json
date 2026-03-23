@@ -1,0 +1,49 @@
+{
+  "version": "1.0",
+  "description": "Banco de dados principal - Rankings de mãos e probabilidades base Texas Hold'em",
+  "hand_rankings": {
+    "royal_flush": { "rank": 1, "name": "Royal Flush", "base_win_rate": 0.9997 },
+    "straight_flush": { "rank": 2, "name": "Straight Flush", "base_win_rate": 0.9985 },
+    "four_of_a_kind": { "rank": 3, "name": "Quadra", "base_win_rate": 0.9940 },
+    "full_house": { "rank": 4, "name": "Full House", "base_win_rate": 0.9720 },
+    "flush": { "rank": 5, "name": "Flush", "base_win_rate": 0.9500 },
+    "straight": { "rank": 6, "name": "Sequência", "base_win_rate": 0.9200 },
+    "three_of_a_kind": { "rank": 7, "name": "Trinca", "base_win_rate": 0.8500 },
+    "two_pair": { "rank": 8, "name": "Dois Pares", "base_win_rate": 0.7500 },
+    "one_pair": { "rank": 9, "name": "Um Par", "base_win_rate": 0.5800 },
+    "high_card": { "rank": 10, "name": "Carta Alta", "base_win_rate": 0.3000 }
+  },
+  "starting_hands": {
+    "AA": { "tier": "S", "preflop_equity": 0.852, "description": "Rockets - Melhor mão pré-flop" },
+    "KK": { "tier": "S", "preflop_equity": 0.824, "description": "Cowboys" },
+    "QQ": { "tier": "S", "preflop_equity": 0.800, "description": "Ladies" },
+    "JJ": { "tier": "S", "preflop_equity": 0.775, "description": "Hooks" },
+    "AKs": { "tier": "S", "preflop_equity": 0.670, "description": "Big Slick suited" },
+    "TT": { "tier": "A", "preflop_equity": 0.752, "description": "Dime" },
+    "AQs": { "tier": "A", "preflop_equity": 0.660, "description": "Big Chick suited" },
+    "AJs": { "tier": "A", "preflop_equity": 0.651, "description": "Ajax suited" },
+    "AKo": { "tier": "A", "preflop_equity": 0.651, "description": "Big Slick offsuit" },
+    "KQs": { "tier": "A", "preflop_equity": 0.629, "description": "Marriage suited" },
+    "99": { "tier": "A", "preflop_equity": 0.720, "description": "Nines" },
+    "ATs": { "tier": "B", "preflop_equity": 0.640, "description": "AT suited" },
+    "AQo": { "tier": "B", "preflop_equity": 0.638, "description": "AQ offsuit" },
+    "88": { "tier": "B", "preflop_equity": 0.692, "description": "Snowmen" },
+    "KJs": { "tier": "B", "preflop_equity": 0.618, "description": "KJ suited" },
+    "KTs": { "tier": "B", "preflop_equity": 0.608, "description": "KT suited" },
+    "77": { "tier": "B", "preflop_equity": 0.662, "description": "Walking Sticks" },
+    "QJs": { "tier": "B", "preflop_equity": 0.602, "description": "QJ suited" },
+    "AJo": { "tier": "C", "preflop_equity": 0.628, "description": "AJ offsuit" },
+    "66": { "tier": "C", "preflop_equity": 0.632, "description": "Route 66" },
+    "55": { "tier": "C", "preflop_equity": 0.601, "description": "Speed Limit" },
+    "44": { "tier": "D", "preflop_equity": 0.571, "description": "Sailboats" },
+    "33": { "tier": "D", "preflop_equity": 0.542, "description": "Crabs" },
+    "22": { "tier": "D", "preflop_equity": 0.512, "description": "Ducks" }
+  },
+  "tier_descriptions": {
+    "S": "Tier S - Mão Premium: SEMPRE entre no jogo agressivamente",
+    "A": "Tier A - Mão Forte: Recomendado entrar, pode aumentar",
+    "B": "Tier B - Mão Boa: Entre com cautela, avalie a mesa",
+    "C": "Tier C - Mão Razoável: Jogue apenas em posição favorável",
+    "D": "Tier D - Mão Fraca: Considere foldar, risco alto"
+  }
+}

@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quantum Poker AI</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --felt: #0a1f14;
+  --felt-mid: #0d2b1a;
+  --felt-light: #133521;
+  --gold: #c9a84c;
+  --gold-light: #e8c96b;
+  --red: #c0392b;
+  --red-bright: #e74c3c;
+  --white: #f5f0e8;
+  --cream: #e8dfc4;
+  --gray: #8a9e8f;
+  --dark: #040d08;
+  --purple: #7c3aed;
+  --cyan: #06b6d4;
+  --green-bright: #22c55e;
+  --orange: #f97316;
+  --radius: 12px;
+  --shadow: 0 20px 60px rgba(0,0,0,0.8);
+}
+
+body {
+  background: var(--dark);
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse at 20% 20%, rgba(10,31,20,0.9) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, rgba(124,58,237,0.05) 0%, transparent 50%),
+    repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.015) 40px, rgba(201,168,76,0.015) 41px);
+  overflow-x: hidden;
+}
+
+/* ── HEADER ───────────────────────────────── */
+header {
+  text-align: center;
+  padding: 40px 20px 20px;
+  position: relative;
+}
+header::after {
+  content: '';
+  display: block;
+  width: 200px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 20px auto 0;
+}
+.logo-suit { font-size: 1.4rem; color: var(--gold); opacity: 0.7; margin: 0 8px; }
+.logo-suit.red { color: var(--red-bright); }
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold), #a07830);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+}
+.subtitle {
+  font-size: 0.8rem;
+  color: var(--gray);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-top: 6px;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── MAIN LAYOUT ──────────────────────────── */
+.app {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── CARDS ────────────────────────────────── */
+.panel {
+  background: linear-gradient(145deg, rgba(13,43,26,0.95), rgba(10,31,20,0.98));
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(201,168,76,0.1);
+}
+.panel-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.panel-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(201,168,76,0.3), transparent);
+}
+
+/* ── SETUP SECTION ────────────────────────── */
+.setup-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; align-items: start; }
+@media(max-width:600px) { .setup-grid { grid-template-columns: 1fr; } }
+
+.field-label {
+  font-size: 0.72rem;
+  color: var(--gray);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-family: 'DM Mono', monospace;
+}
+
+.player-counter {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 8px;
+  overflow: hidden;
+  width: fit-content;
+}
+.counter-btn {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-size: 1.2rem;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: 'DM Mono', monospace;
+}
+.counter-btn:hover { background: rgba(201,168,76,0.15); }
+.counter-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--white);
+  min-width: 48px;
+  text-align: center;
+}
+
+/* ── CARD SELECTOR ────────────────────────── */
+.card-area { display: flex; flex-direction: column; gap: 14px; }
+.card-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.card-slot {
+  width: 58px; height: 82px;
+  border-radius: 8px;
+  border: 2px dashed rgba(201,168,76,0.3);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  color: rgba(201,168,76,0.4);
+  position: relative;
+  background: rgba(0,0,0,0.3);
+  flex-shrink: 0;
+}
+.card-slot:hover { border-color: var(--gold); background: rgba(201,168,76,0.07); }
+.card-slot.filled {
+  border-style: solid;
+  border-color: rgba(201,168,76,0.5);
+  background: rgba(255,255,255,0.97);
+  flex-direction: column;
+  gap: 1px;
+}
+.card-slot.filled:hover { border-color: var(--red-bright); }
+.card-display {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+.card-suit-disp { font-size: 1.2rem; line-height: 1; }
+.card-disp-red { color: var(--red); }
+.card-disp-black { color: #1a1a1a; }
+
+.row-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  min-width: 70px;
+}
+
+/* ── CARD PICKER MODAL ────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: linear-gradient(145deg, #0f2a1a, #0a1f14);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+  animation: modalIn 0.25s ease;
+}
+@keyframes modalIn { from { opacity:0; transform:scale(0.92) translateY(20px); } to { opacity:1; transform:none; } }
+.modal-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--gold);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.suit-section { margin-bottom: 16px; }
+.suit-label {
+  font-size: 0.7rem;
+  color: var(--gray);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 4px;
+}
+.pick-card {
+  aspect-ratio: 3/4;
+  border-radius: 5px;
+  background: rgba(255,255,255,0.94);
+  border: 1px solid rgba(0,0,0,0.1);
+  cursor: pointer;
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 1px;
+  transition: transform 0.1s, box-shadow 0.1s;
+  line-height: 1;
+}
+.pick-card:hover { transform: scale(1.12); box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 2; position: relative; }
+.pick-card.used { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
+.pick-card.red-suit { color: var(--red); }
+.pick-card.black-suit { color: #1a1a1a; }
+.modal-close {
+  margin-top: 18px;
+  width: 100%;
+  padding: 10px;
+  background: rgba(201,168,76,0.1);
+  border: 1px solid rgba(201,168,76,0.3);
+  color: var(--gold);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: background 0.2s;
+}
+.modal-close:hover { background: rgba(201,168,76,0.2); }
+
+/* ── PHASE BUTTONS ────────────────────────── */
+.phase-controls { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex; align-items: center; gap: 8px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold), #a07830);
+  color: #0a0a0a;
+  box-shadow: 0 4px 20px rgba(201,168,76,0.3);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(201,168,76,0.4); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn-danger {
+  background: rgba(231,76,60,0.15);
+  border: 1px solid rgba(231,76,60,0.3);
+  color: var(--red-bright);
+}
+.btn-danger:hover { background: rgba(231,76,60,0.25); }
+.btn-ghost {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--gray);
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.1); color: var(--white); }
+
+/* ── RESULT PANEL ─────────────────────────── */
+.result-panel { display: none; }
+.result-panel.active { display: block; }
+
+/* Equity Gauge */
+.equity-display {
+  display: flex;
+  gap: 24px;
+  align-items: stretch;
+  margin-bottom: 20px;
+}
+@media(max-width:600px) { .equity-display { flex-direction: column; } }
+
+.gauge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+}
+.gauge-ring {
+  width: 120px; height: 120px;
+  position: relative;
+}
+.gauge-ring svg { transform: rotate(-90deg); }
+.gauge-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 10; }
+.gauge-fill {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 314;
+  stroke-dashoffset: 314;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1), stroke 0.5s;
+}
+.gauge-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.gauge-pct {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--white);
+  line-height: 1;
+}
+.gauge-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem;
+  color: var(--gray);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+.equity-meta { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+.meta-row { display: flex; justify-content: space-between; align-items: baseline; }
+.meta-key { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--gray); letter-spacing: 0.1em; text-transform: uppercase; }
+.meta-val { font-family: 'DM Mono', monospace; font-size: 0.85rem; color: var(--cream); }
+
+/* Decision Badge */
+.decision-badge {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  border-left: 4px solid;
+  background: rgba(0,0,0,0.3);
+}
+.decision-emoji { font-size: 2rem; }
+.decision-action {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.decision-sub { font-size: 0.78rem; color: var(--gray); margin-top: 4px; font-family: 'Inter', sans-serif; }
+
+/* Progress bar equity */
+.equity-bar-wrap { margin-top: 4px; }
+.equity-bar-track {
+  height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.equity-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Draws section */
+.draws-list { display: flex; flex-direction: column; gap: 8px; }
+.draw-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(6,182,212,0.07);
+  border: 1px solid rgba(6,182,212,0.15);
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+.draw-name { color: var(--cyan); font-family: 'DM Mono', monospace; font-size: 0.72rem; }
+.draw-outs { font-family: 'Playfair Display', serif; color: var(--gold); font-weight: 700; font-size: 1.1rem; }
+
+/* Phase tracker */
+.phase-track {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(201,168,76,0.2);
+}
+.phase-step {
+  flex: 1;
+  text-align: center;
+  padding: 10px 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gray);
+  background: rgba(0,0,0,0.3);
+  transition: all 0.3s;
+  border-right: 1px solid rgba(201,168,76,0.1);
+}
+.phase-step:last-child { border-right: none; }
+.phase-step.active { background: rgba(201,168,76,0.15); color: var(--gold); font-weight: 600; }
+.phase-step.done { background: rgba(34,197,94,0.1); color: var(--green-bright); }
+
+/* Fold controls */
+.fold-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  background: rgba(231,76,60,0.06);
+  border: 1px solid rgba(231,76,60,0.15);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+.fold-label { font-size: 0.8rem; color: var(--cream); flex: 1; min-width: 160px; }
+.fold-btn {
+  padding: 8px 16px;
+  background: rgba(231,76,60,0.2);
+  border: 1px solid rgba(231,76,60,0.4);
+  color: var(--red-bright);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  transition: background 0.15s;
+}
+.fold-btn:hover { background: rgba(231,76,60,0.35); }
+.opponent-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.opp-chip {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 2px solid rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--cream);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.opp-chip:hover { border-color: var(--red-bright); background: rgba(231,76,60,0.15); }
+.opp-chip.folded {
+  opacity: 0.3;
+  text-decoration: line-through;
+  pointer-events: none;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: rgba(13,43,26,0.97);
+  border: 1px solid rgba(201,168,76,0.3);
+  color: var(--cream);
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  z-index: 200;
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Loading */
+.loading-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(2px);
+  z-index: 50;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+}
+.loading-overlay.active { display: flex; }
+.spinner {
+  width: 48px; height: 48px;
+  border: 3px solid rgba(201,168,76,0.2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-txt { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--gold); letter-spacing: 0.15em; text-transform: uppercase; }
+
+/* Responsive */
+@media(max-width:480px) {
+  .card-grid { grid-template-columns: repeat(7, 1fr); }
+  .modal { padding: 16px; }
+}
+
+.hand-name-big {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+.divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.2), transparent); margin: 16px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <span class="logo-suit">♠</span>
+    <span class="logo-suit red">♥</span>
+    <span class="logo-suit">♣</span>
+    <span class="logo-suit red">♦</span>
+  </div>
+  <h1>Quantum Poker AI</h1>
+  <div class="subtitle">Texas Hold'em · Análise Neural de Probabilidades</div>
+</header>
+
+<div class="app">
+
+  <!-- Phase Tracker -->
+  <div class="phase-track">
+    <div class="phase-step active" id="step-setup">⚙ Setup</div>
+    <div class="phase-step" id="step-preflop">🃏 Pré-Flop</div>
+    <div class="phase-step" id="step-flop">🎴 Flop</div>
+    <div class="phase-step" id="step-turn">🔄 Turn</div>
+    <div class="phase-step" id="step-river">🏁 River</div>
+  </div>
+
+  <!-- Setup Panel -->
+  <div class="panel" id="setup-panel">
+    <div class="panel-title">Configuração da Mesa</div>
+    <div class="setup-grid">
+      <div>
+        <div class="field-label">Número de Oponentes</div>
+        <div class="player-counter">
+          <button class="counter-btn" onclick="changeOpponents(-1)">−</button>
+          <span class="counter-val" id="opp-count">3</span>
+          <button class="counter-btn" onclick="changeOpponents(+1)">+</button>
+        </div>
+        <div style="font-size:0.65rem;color:var(--gray);margin-top:6px;font-family:'DM Mono',monospace;">
+          Jogadores ativos: <span id="active-count" style="color:var(--cream);">4</span>
+        </div>
+      </div>
+      <div class="card-area">
+        <div class="field-label">Suas Cartas (Hole Cards)</div>
+        <div class="card-row">
+          <div class="card-slot" id="hole-0" onclick="openPicker('hole', 0)">+</div>
+          <div class="card-slot" id="hole-1" onclick="openPicker('hole', 1)">+</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:20px;">
+      <button class="btn btn-primary" onclick="analyzePreflop()" id="btn-preflop">
+        ⚡ Analisar Mão
+      </button>
+    </div>
+  </div>
+
+  <!-- Community Cards Panel -->
+  <div class="panel" id="community-panel" style="display:none;">
+    <div class="panel-title">Cartas da Mesa</div>
+    <div class="card-area">
+      <div>
+        <div class="field-label">Flop (3 cartas)</div>
+        <div class="card-row">
+          <div class="card-slot" id="flop-0" onclick="openPicker('flop', 0)">+</div>
+          <div class="card-slot" id="flop-1" onclick="openPicker('flop', 1)">+</div>
+          <div class="card-slot" id="flop-2" onclick="openPicker('flop', 2)">+</div>
+        </div>
+      </div>
+      <div id="turn-section" style="display:none;">
+        <div class="field-label">Turn (4ª carta)</div>
+        <div class="card-row">
+          <div class="card-slot" id="turn-0" onclick="openPicker('turn', 0)">+</div>
+        </div>
+      </div>
+      <div id="river-section" style="display:none;">
+        <div class="field-label">River (5ª carta)</div>
+        <div class="card-row">
+          <div class="card-slot" id="river-0" onclick="openPicker('river', 0)">+</div>
+        </div>
+      </div>
+    </div>
+    <div class="phase-controls" style="margin-top:16px;" id="phase-btns">
+      <button class="btn btn-primary" onclick="analyzeFlop()" id="btn-flop">🎴 Analisar Flop</button>
+      <button class="btn btn-ghost" onclick="resetGame()">↺ Reiniciar</button>
+    </div>
+  </div>
+
+  <!-- Opponent Fold Panel -->
+  <div class="panel" id="fold-panel" style="display:none;">
+    <div class="panel-title">Gestão de Oponentes</div>
+    <div class="fold-row">
+      <div class="fold-label">Clique em um oponente para marcá-lo como fold:</div>
+      <div class="opponent-chips" id="opp-chips"></div>
+    </div>
+  </div>
+
+  <!-- Result Panel -->
+  <div class="panel result-panel" id="result-panel">
+    <div class="panel-title" id="result-phase-label">Análise · Pré-Flop</div>
+
+    <!-- Equity Gauge -->
+    <div class="equity-display">
+      <div class="gauge-wrap">
+        <div class="gauge-ring">
+          <svg viewBox="0 0 120 120" width="120" height="120">
+            <circle class="gauge-bg" cx="60" cy="60" r="50"/>
+            <circle class="gauge-fill" id="gauge-fill" cx="60" cy="60" r="50" stroke="var(--gold)"/>
+          </svg>
+          <div class="gauge-text">
+            <div class="gauge-pct" id="gauge-pct">0%</div>
+            <div class="gauge-label">Equity</div>
+          </div>
+        </div>
+      </div>
+      <div class="equity-meta">
+        <div class="equity-bar-wrap">
+          <div class="meta-key" style="margin-bottom:6px;">Probabilidade de vitória</div>
+          <div class="equity-bar-track">
+            <div class="equity-bar-fill" id="equity-bar" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="meta-row"><span class="meta-key">Fase</span><span class="meta-val" id="res-phase">—</span></div>
+        <div class="meta-row"><span class="meta-key">Oponentes ativos</span><span class="meta-val" id="res-opponents">—</span></div>
+        <div class="meta-row" id="res-hand-row" style="display:none;"><span class="meta-key">Mão atual</span><span class="meta-val hand-name-big" id="res-hand">—</span></div>
+        <div class="meta-row" id="res-draw-row" style="display:none;"><span class="meta-key">Draw prob.</span><span class="meta-val" id="res-draw-pct" style="color:var(--cyan);">—</span></div>
+      </div>
+    </div>
+
+    <!-- Decision Badge -->
+    <div class="decision-badge" id="decision-badge">
+      <div class="decision-emoji" id="decision-emoji">⚡</div>
+      <div>
+        <div class="decision-action" id="decision-action">—</div>
+        <div class="decision-sub" id="decision-sub">Calculando...</div>
+      </div>
+    </div>
+
+    <!-- Starting Hand Info (preflop) -->
+    <div id="starting-hand-info" style="display:none;">
+      <div class="divider"></div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <div style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:8px 16px;text-align:center;">
+          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--gray);letter-spacing:0.1em;">TIER</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;color:var(--gold);" id="hand-tier">—</div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:0.85rem;color:var(--cream);" id="hand-description">—</div>
+          <div style="font-size:0.75rem;color:var(--gray);margin-top:4px;" id="hand-advice">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Draws -->
+    <div id="draws-section" style="display:none;">
+      <div class="divider"></div>
+      <div class="field-label" style="margin-bottom:10px;">Projetos de Mão Detectados</div>
+      <div class="draws-list" id="draws-list"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Card Picker Modal -->
+<div class="modal-overlay" id="picker-modal" onclick="closePicker(event)">
+  <div class="modal">
+    <div class="modal-title">🃏 Escolha uma carta</div>
+    <div id="picker-suits"></div>
+    <button class="modal-close" onclick="closePickerModal()">Fechar</button>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-txt">Simulando Monte Carlo...</div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+//  State
+// ─────────────────────────────────────────────
+const state = {
+  opponents: 3,
+  foldedOpponents: new Set(),
+  holeCards: [null, null],
+  communityCards: { flop: [null,null,null], turn: [null], river: [null] },
+  phase: 'setup',
+  pickerTarget: null,
+  lastResult: null
+};
+
+const VALUES = ['2','3','4','5','6','7','8','9','T','J','Q','K','A'];
+const SUITS = [
+  { key: 's', sym: '♠', label: 'Espadas', color: 'black-suit' },
+  { key: 'h', sym: '♥', label: 'Copas',   color: 'red-suit' },
+  { key: 'd', sym: '♦', label: 'Ouros',   color: 'red-suit' },
+  { key: 'c', sym: '♣', label: 'Paus',    color: 'black-suit' }
+];
+
+// ─────────────────────────────────────────────
+//  Helpers
+// ─────────────────────────────────────────────
+function allSelected() {
+  return [
+    ...state.holeCards,
+    ...state.communityCards.flop,
+    ...state.communityCards.turn,
+    ...state.communityCards.river
+  ].filter(Boolean);
+}
+
+function getActiveOpponents() {
+  return state.opponents - state.foldedOpponents.size;
+}
+
+function cardHtml(card) {
+  if (!card) return '+';
+  const suitObj = SUITS.find(s => card[1] === s.key);
+  const isRed = suitObj && (suitObj.key === 'h' || suitObj.key === 'd');
+  const cls = isRed ? 'card-disp-red' : 'card-disp-black';
+  return `<span class="${cls} card-display">${card[0]}</span><span class="${cls} card-suit-disp">${suitObj.sym}</span>`;
+}
+
+function renderSlot(id, card) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (card) {
+    el.classList.add('filled');
+    el.innerHTML = cardHtml(card);
+  } else {
+    el.classList.remove('filled');
+    el.innerHTML = '+';
+  }
+}
+
+// ─────────────────────────────────────────────
+//  Opponents
+// ─────────────────────────────────────────────
+function changeOpponents(delta) {
+  state.opponents = Math.max(1, Math.min(9, state.opponents + delta));
+  state.foldedOpponents.clear();
+  document.getElementById('opp-count').textContent = state.opponents;
+  updateActiveCount();
+  renderOpponentChips();
+}
+
+function updateActiveCount() {
+  document.getElementById('active-count').textContent = getActiveOpponents() + 1; // +1 for player
+}
+
+function renderOpponentChips() {
+  const wrap = document.getElementById('opp-chips');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  for (let i = 1; i <= state.opponents; i++) {
+    const el = document.createElement('div');
+    el.className = 'opp-chip' + (state.foldedOpponents.has(i) ? ' folded' : '');
+    el.textContent = 'P' + (i+1);
+    el.title = state.foldedOpponents.has(i) ? 'Foldou' : 'Clique para fold';
+    el.onclick = () => toggleFold(i, el);
+    wrap.appendChild(el);
+  }
+}
+
+function toggleFold(i, el) {
+  if (state.foldedOpponents.has(i)) return;
+  if (getActiveOpponents() <= 1) { showToast('Deve restar ao menos 1 oponente'); return; }
+  state.foldedOpponents.add(i);
+  el.classList.add('folded');
+  updateActiveCount();
+  showToast(`Jogador ${i+1} foldou`);
+  // Re-analyze with updated opponents
+  if (state.lastResult) reanalyze();
+}
+
+// ─────────────────────────────────────────────
+//  Card Picker
+// ─────────────────────────────────────────────
+function openPicker(group, idx) {
+  state.pickerTarget = { group, idx };
+  const used = allSelected().filter(Boolean);
+  const container = document.getElementById('picker-suits');
+  container.innerHTML = '';
+  for (const suit of SUITS) {
+    const section = document.createElement('div');
+    section.className = 'suit-section';
+    section.innerHTML = `<div class="suit-label">${suit.sym} ${suit.label}</div><div class="card-grid" id="grid-${suit.key}"></div>`;
+    container.appendChild(section);
+    const grid = document.getElementById('grid-' + suit.key);
+    for (const v of VALUES) {
+      const card = v + suit.key;
+      const btn = document.createElement('button');
+      btn.className = `pick-card ${suit.color}${used.includes(card) ? ' used' : ''}`;
+      btn.innerHTML = `<span>${v}</span><span>${suit.sym}</span>`;
+      btn.onclick = () => selectCard(card);
+      grid.appendChild(btn);
+    }
+  }
+  document.getElementById('picker-modal').classList.add('active');
+}
+
+function selectCard(card) {
+  const { group, idx } = state.pickerTarget;
+  if (group === 'hole') state.holeCards[idx] = card;
+  else state.communityCards[group][idx] = card;
+  renderAllSlots();
+  closePickerModal();
+}
+
+function closePicker(e) {
+  if (e.target === document.getElementById('picker-modal')) closePickerModal();
+}
+function closePickerModal() {
+  document.getElementById('picker-modal').classList.remove('active');
+}
+
+function renderAllSlots() {
+  renderSlot('hole-0', state.holeCards[0]);
+  renderSlot('hole-1', state.holeCards[1]);
+  ['flop','turn','river'].forEach(g => {
+    state.communityCards[g].forEach((c, i) => renderSlot(`${g}-${i}`, c));
+  });
+}
+
+// ─────────────────────────────────────────────
+//  Phase Management
+// ─────────────────────────────────────────────
+function setPhaseStep(step) {
+  ['setup','preflop','flop','turn','river'].forEach((s, i) => {
+    const el = document.getElementById('step-' + s);
+    el.classList.remove('active', 'done');
+    const steps = ['setup','preflop','flop','turn','river'];
+    const cur = steps.indexOf(step);
+    const me = steps.indexOf(s);
+    if (me < cur) el.classList.add('done');
+    else if (me === cur) el.classList.add('active');
+  });
+}
+
+// ─────────────────────────────────────────────
+//  API Calls
+// ─────────────────────────────────────────────
+async function callAPI(holeCards, communityCards) {
+  document.getElementById('loading').classList.add('active');
+  try {
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ holeCards, communityCards, numOpponents: getActiveOpponents() })
+    });
+    return await res.json();
+  } finally {
+    document.getElementById('loading').classList.remove('active');
+  }
+}
+
+async function analyzePreflop() {
+  if (!state.holeCards[0] || !state.holeCards[1]) { showToast('Selecione suas 2 cartas primeiro!'); return; }
+  const result = await callAPI(state.holeCards, []);
+  state.lastResult = result;
+  state.phase = 'preflop';
+  renderResult(result);
+  document.getElementById('community-panel').style.display = 'block';
+  document.getElementById('fold-panel').style.display = 'block';
+  renderOpponentChips();
+  setPhaseStep('preflop');
+  updateActionButtons('preflop');
+}
+
+async function analyzeFlop() {
+  const flop = state.communityCards.flop;
+  if (flop.some(c => !c)) { showToast('Selecione as 3 cartas do flop!'); return; }
+  const result = await callAPI(state.holeCards, flop);
+  state.lastResult = result;
+  state.phase = 'flop';
+  renderResult(result);
+  document.getElementById('turn-section').style.display = 'block';
+  setPhaseStep('flop');
+  updateActionButtons('flop');
+}
+
+async function analyzeTurn() {
+  const flop = state.communityCards.flop;
+  const turn = state.communityCards.turn[0];
+  if (!turn) { showToast('Selecione a carta do turn!'); return; }
+  const result = await callAPI(state.holeCards, [...flop, turn]);
+  state.lastResult = result;
+  state.phase = 'turn';
+  renderResult(result);
+  document.getElementById('river-section').style.display = 'block';
+  setPhaseStep('turn');
+  updateActionButtons('turn');
+}
+
+async function analyzeRiver() {
+  const flop = state.communityCards.flop;
+  const turn = state.communityCards.turn[0];
+  const river = state.communityCards.river[0];
+  if (!river) { showToast('Selecione a carta do river!'); return; }
+  const result = await callAPI(state.holeCards, [...flop, turn, river]);
+  state.lastResult = result;
+  state.phase = 'river';
+  renderResult(result);
+  setPhaseStep('river');
+  updateActionButtons('river');
+}
+
+async function reanalyze() {
+  const community = [
+    ...state.communityCards.flop.filter(Boolean),
+    ...state.communityCards.turn.filter(Boolean),
+    ...state.communityCards.river.filter(Boolean)
+  ];
+  const result = await callAPI(state.holeCards, community);
+  state.lastResult = result;
+  renderResult(result);
+}
+
+function updateActionButtons(phase) {
+  const container = document.getElementById('phase-btns');
+  container.innerHTML = '';
+  const addBtn = (label, fn, cls='btn-primary') => {
+    const b = document.createElement('button');
+    b.className = `btn ${cls}`;
+    b.innerHTML = label;
+    b.onclick = fn;
+    container.appendChild(b);
+  };
+  if (phase === 'preflop') addBtn('🎴 Analisar Flop', analyzeFlop);
+  if (phase === 'flop') addBtn('🔄 Analisar Turn', analyzeTurn);
+  if (phase === 'turn') addBtn('🏁 Analisar River', analyzeRiver);
+  addBtn('↺ Nova Mão', resetGame, 'btn-ghost');
+}
+
+// ─────────────────────────────────────────────
+//  Render Result
+// ─────────────────────────────────────────────
+const DECISION_COLORS = {
+  FOLD: '#e74c3c', CHECK: '#e67e22', CALL: '#f1c40f',
+  RAISE: '#2ecc71', ALL_IN: '#9b59b6'
+};
+const DECISION_EMOJIS = { FOLD: '🚫', CHECK: '✋', CALL: '📞', RAISE: '⬆️', ALL_IN: '💥' };
+const DECISION_LABELS = {
+  FOLD: 'FOLD — Saia agora', CHECK: 'CHECK — Aguarde', CALL: 'CALL — Entre',
+  RAISE: 'RAISE — Pressione', ALL_IN: 'ALL-IN — Tudo!'
+};
+
+function getDecisionSub(action, result) {
+  const rank = result.currentHand?.rank;
+  const handName = result.currentHand?.name || '';
+  if (action === 'ALL_IN') {
+    if (rank >= 7) return `${handName}! Mão imbatível — force o all-in!`;
+    if (rank >= 5) return `${handName}! Mão premium — maximize o pote!`;
+    return 'Mão dominante. Maximize o pote!';
+  }
+  if (action === 'RAISE') {
+    if (rank >= 5) return `${handName}! Mão forte — pressione com apostas altas.`;
+    if (rank >= 3) return `${handName}. Bom momento para apostar e proteger a mão.`;
+    return 'Posição favorável. Pressione os oponentes.';
+  }
+  if (action === 'CALL')  return 'Boa probabilidade. Pague e veja o próximo street.';
+  if (action === 'CHECK') return 'Mão limítrofe. Veja mais cartas sem apostar.';
+  if (action === 'FOLD')  return 'Probabilidade muito baixa. Proteja seu stack.';
+  return '';
+}
+const PHASE_LABELS = {
+  preflop: 'Pré-Flop', flop: 'Flop', turn: 'Turn', river: 'River'
+};
+
+function renderResult(r) {
+  const panel = document.getElementById('result-panel');
+  panel.classList.add('active');
+
+  const pct = parseFloat(r.equityPct);
+  const action = r.decision?.action || 'CHECK';
+  const color = DECISION_COLORS[action] || '#f1c40f';
+
+  // Gauge
+  const offset = 314 - (pct / 100) * 314;
+  const gf = document.getElementById('gauge-fill');
+  gf.style.strokeDashoffset = offset;
+  gf.style.stroke = color;
+  document.getElementById('gauge-pct').textContent = pct + '%';
+
+  // Bar
+  const bar = document.getElementById('equity-bar');
+  bar.style.width = pct + '%';
+  bar.style.background = `linear-gradient(90deg, ${color}aa, ${color})`;
+
+  // Meta
+  document.getElementById('res-phase').textContent = PHASE_LABELS[r.phase] || r.phase;
+  document.getElementById('res-opponents').textContent = getActiveOpponents() + ' oponente(s)';
+  document.getElementById('result-phase-label').textContent = `Análise · ${PHASE_LABELS[r.phase] || r.phase}`;
+
+  // Decision
+  const badge = document.getElementById('decision-badge');
+  badge.style.borderColor = color;
+  badge.style.background = `${color}0d`;
+  document.getElementById('decision-emoji').textContent = DECISION_EMOJIS[action];
+  document.getElementById('decision-action').textContent = DECISION_LABELS[action];
+  document.getElementById('decision-action').style.color = color;
+  document.getElementById('decision-sub').textContent = getDecisionSub(action, r);
+
+  // Starting hand (preflop)
+  const shi = document.getElementById('starting-hand-info');
+  if (r.startingHand) {
+    shi.style.display = 'block';
+    document.getElementById('hand-tier').textContent = r.startingHand.tier;
+    document.getElementById('hand-description').textContent = r.startingHand.description;
+    document.getElementById('hand-advice').textContent = r.advice || '';
+    document.getElementById('res-hand-row').style.display = 'none';
+  } else {
+    shi.style.display = 'none';
+  }
+
+  // Current hand (postflop)
+  if (r.currentHand) {
+    document.getElementById('res-hand-row').style.display = 'flex';
+    document.getElementById('res-hand').textContent = r.currentHand.name;
+  }
+
+  // Draws
+  const drawsSec = document.getElementById('draws-section');
+  const drawsList = document.getElementById('draws-list');
+  if (r.draws && r.draws.length > 0) {
+    drawsSec.style.display = 'block';
+    drawsList.innerHTML = r.draws.map(d => `
+      <div class="draw-item">
+        <span class="draw-name">${d.name}</span>
+        <span class="draw-outs">${d.outs} outs</span>
+        <span style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--gray);">${r.drawProbability}% completar</span>
+      </div>
+    `).join('');
+    if (r.drawProbability > 0) {
+      document.getElementById('res-draw-row').style.display = 'flex';
+      document.getElementById('res-draw-pct').textContent = r.drawProbability + '% de completar';
+    }
+  } else {
+    drawsSec.style.display = 'none';
+    document.getElementById('res-draw-row').style.display = 'none';
+  }
+
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ─────────────────────────────────────────────
+//  Reset
+// ─────────────────────────────────────────────
+function resetGame() {
+  state.holeCards = [null, null];
+  state.communityCards = { flop: [null,null,null], turn: [null], river: [null] };
+  state.foldedOpponents.clear();
+  state.phase = 'setup';
+  state.lastResult = null;
+  renderAllSlots();
+  document.getElementById('community-panel').style.display = 'none';
+  document.getElementById('fold-panel').style.display = 'none';
+  document.getElementById('result-panel').classList.remove('active');
+  document.getElementById('turn-section').style.display = 'none';
+  document.getElementById('river-section').style.display = 'none';
+  document.getElementById('phase-btns').innerHTML =
+    '<button class="btn btn-primary" onclick="analyzeFlop()" id="btn-flop">🎴 Analisar Flop</button>' +
+    '<button class="btn btn-ghost" onclick="resetGame()">↺ Reiniciar</button>';
+  setPhaseStep('setup');
+  updateActiveCount();
+  document.getElementById('opp-count').textContent = state.opponents;
+  document.getElementById('gauge-fill').style.strokeDashoffset = 314;
+  document.getElementById('gauge-pct').textContent = '0%';
+}
+
+// ─────────────────────────────────────────────
+//  Toast
+// ─────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Init
+updateActiveCount();
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+{
+  "version": "1.0",
+  "description": "Banco de dados 3 - Análise de textura do board, estatísticas avançadas e padrões de jogo",
+  "board_texture": {
+    "dry": {
+      "description": "Mesa seca - poucas possibilidades de draws",
+      "equity_bonus": 0.05,
+      "example": "K♠ 7♥ 2♦ (rainbow, sem conexões)",
+      "recommendation": "Mãos feitas têm mais valor. Blefe tem menos credibilidade."
+    },
+    "wet": {
+      "description": "Mesa molhada - muitas possibilidades de draws",
+      "equity_penalty": 0.08,
+      "example": "J♥ T♥ 9♠ (conectada, com flush draw)",
+      "recommendation": "Cuidado! Muitos draws possíveis. Proteja sua mão com apostas."
+    },
+    "semi_wet": {
+      "description": "Mesa semi-molhada - algumas possibilidades",
+      "equity_adjustment": 0.00,
+      "example": "A♠ 8♥ 5♦ (um flush draw possível)",
+      "recommendation": "Avalie cuidadosamente antes de comprometer fichas."
+    }
+  },
+  "hand_combinations": {
+    "description": "Número de combinações possíveis para cada tipo de mão em um baralho de 52 cartas",
+    "royal_flush": 4,
+    "straight_flush": 36,
+    "four_of_a_kind": 624,
+    "full_house": 3744,
+    "flush": 5108,
+    "straight": 10200,
+    "three_of_a_kind": 54912,
+    "two_pair": 123552,
+    "one_pair": 1098240,
+    "high_card": 1302540,
+    "total": 2598960
+  },
+  "preflop_equity_vs_opponents": {
+    "description": "Equity média de mãos premium contra N oponentes aleatórios",
+    "AA": { "vs1": 0.852, "vs2": 0.731, "vs3": 0.635, "vs4": 0.558, "vs5": 0.494, "vs6": 0.441, "vs7": 0.397, "vs8": 0.360, "vs9": 0.328 },
+    "KK": { "vs1": 0.824, "vs2": 0.694, "vs3": 0.593, "vs4": 0.515, "vs5": 0.452, "vs6": 0.401, "vs7": 0.359, "vs8": 0.324, "vs9": 0.295 },
+    "QQ": { "vs1": 0.800, "vs2": 0.659, "vs3": 0.553, "vs4": 0.474, "vs5": 0.412, "vs6": 0.362, "vs7": 0.322, "vs8": 0.289, "vs9": 0.261 },
+    "JJ": { "vs1": 0.775, "vs2": 0.626, "vs3": 0.519, "vs4": 0.439, "vs5": 0.377, "vs6": 0.329, "vs7": 0.291, "vs8": 0.260, "vs9": 0.235 },
+    "TT": { "vs1": 0.752, "vs2": 0.597, "vs3": 0.488, "vs4": 0.409, "vs5": 0.349, "vs6": 0.303, "vs7": 0.267, "vs8": 0.238, "vs9": 0.214 },
+    "AKs": { "vs1": 0.670, "vs2": 0.512, "vs3": 0.406, "vs4": 0.332, "vs5": 0.278, "vs6": 0.238, "vs7": 0.207, "vs8": 0.182, "vs9": 0.162 },
+    "AKo": { "vs1": 0.651, "vs2": 0.491, "vs3": 0.385, "vs4": 0.313, "vs5": 0.261, "vs6": 0.222, "vs7": 0.193, "vs8": 0.170, "vs9": 0.151 }
+  },
+  "monte_carlo_samples": 50000,
+  "decision_matrix": {
+    "description": "Matriz de decisão combinando equity e número de oponentes",
+    "actions": {
+      "FOLD":    { "emoji": "🚫", "color": "#e74c3c", "threshold_max": 0.22 },
+      "CHECK":   { "emoji": "✋", "color": "#e67e22", "threshold_min": 0.22, "threshold_max": 0.38 },
+      "CALL":    { "emoji": "📞", "color": "#f1c40f", "threshold_min": 0.38, "threshold_max": 0.55 },
+      "RAISE":   { "emoji": "⬆️", "color": "#2ecc71", "threshold_min": 0.55, "threshold_max": 0.75 },
+      "ALL_IN":  { "emoji": "💥", "color": "#9b59b6", "threshold_min": 0.75 }
+    }
+  },
+  "card_values": {
+    "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8,
+    "9": 9, "T": 10, "J": 11, "Q": 12, "K": 13, "A": 14
+  },
+  "suits": {
+    "♠": "spades", "♥": "hearts", "♦": "diamonds", "♣": "clubs",
+    "s": "spades", "h": "hearts", "d": "diamonds", "c": "clubs"
+  },
+  "famous_patterns": {
+    "set_mining": {
+      "description": "Par pequeno tentando fazer trinca",
+      "required_pot_odds": 0.125,
+      "note": "Pague no máximo 1/8 do stack para ver flop com par pequeno"
+    },
+    "continuation_bet": {
+      "description": "Apostar no flop após ter sido o agressor pré-flop",
+      "success_rate": 0.65,
+      "recommended_size": "0.5 a 0.75 do pote"
+    }
+  }
+}
