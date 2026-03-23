@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Texas Hold'em Poker AI com simulação Monte Carlo",
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   },
   "scripts": {
     "start": "node server.js",
